@@ -1,51 +1,20 @@
 # Kaoto + Apache Camel JBang PoC repo
 
-# Manual steps at install
-- `oc edit -n openshift-tempo-operator cm tempo-operator-manager-config`
-  set grafanaOperator feature gate to "true"
+## install:
 
-## Notes from last meetings
-### 08-07
-- Discussed
-  - helm chart intro
-  - walkthrough use cases
-  - installation of infrastructure helm chart and kamel integrations on vw cluster worked
-- todos:
-    - Michael: 
-      - fix bitbucket to openshift webhook connection (network restriction?) at cicd run
-    - use cases: 
-      - fix mqtt consumer url
-      - file upload to minio use cases (5&7) run and hope it works
-      - fill_bucket go app
-      - exception handling -> when something breaks -> validate file/stacktrace?
-    - grafana:
-      - grafana is deployed twice? why? Operator is deployed in namespace only mode. Clusterwide grafana-operator installed?
-      - grafana dashboard - no namespace. Permission error? 
-      - add loki datasource
-    - tempo: Find a way to set endpoint without the need to name the deployment namespace "poc-camel-k" in all use cases
-      `--trait tracing.endpoint=http://tempo-tempo-distributor.poc-camel-k.svc.cluster.local:14268/api/traces`
+1. create namespace via `oc new-project camel-poc`
+2. run `1-install.sh` file or rollout manually using whatever is written there
+3. ???
+4. Profit.
 
-
-    
 ---
-
-# Internal repo things
-
-## todo
-- line 7 in postgresql route --> use datasource environment variable
-- set used images in values.yaml
-
-## Issues to fix
-- better automation
-  ```sh
-  oc extract secret/grafana-oauth-sa-token-nhpzm --keys=token --to=- >> values.yaml
-  ```
-- datasource env variable use in kaoto parameter
 
 ## Troubleshooting: 
 
-- grafana datasource not working
-    oc adm policy add-cluster-role-to-user cluster-monitoring-view -z grafana-oauth-sa 
+- finalizer prevents deletion, for example the namespace (usually some pvcs)
+  ```sh
+  oc patch ns camel-k-poc  -p '{"metadata":{"finalizers": []}}' --type=merge
+  ```
 
 - invalid ownership metadata; label validation error: missing helm keys ...
   ```sh
