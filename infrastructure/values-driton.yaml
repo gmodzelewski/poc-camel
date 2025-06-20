@@ -1,0 +1,63 @@
+after_subscription_install_run: enabled # (enabled|disabled), skips all CRs when disabled. Set this for disabled in the first helm install. Enable after successful subscription install run. Can be ignored and just enabled when using argocd because of sync waves.
+
+# --- begin operator installs -- if any of these make problems - install them manually and disable it here.
+operatorinstall_grafana: disabled # (enabled|disabled)
+operatorinstall_tempo: disabled # (enabled|disabled)
+operatorinstall_camelk: disabled # (enabled|disabled)
+operatorinstall_hawtio: disabled # (enabled|disabled)
+operatorinstall_postgresql: disabled # (enabled|disabled)
+operatorinstall_amqbroker: disabled # (enabled|disabled) 
+operatorinstall_devspaces: disabled # (enabled|disabled) 
+#--- end ---
+
+amqbroker_instance: enabled
+amqbroker_replicas: 1
+amqbroker_url: "tcp://tst-aao-mqtt-acceptor-1-svc"
+amqbroker_port: "1883"
+amqbroker_username: "admin"
+amqbroker_password: "admin"
+
+hawtio_instance: disabled
+
+minio_instance: disabled
+minio_image: quay.io/minio/minio:latest
+minio_replicas: 1
+minio_endpoint: minio-service.vwhhfif-devminio.lab-connect.factoryedge.wob.vw.vwgroup.com
+minio_username: "minioadmin"
+minio_password: "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+minio_bucket_tempo: "tempo"
+minio_bucket_usecase5: usecase5
+minio_bucket_usecase7: usecase7
+
+grafana_instance: enabled
+grafana_clustermonitoring: disabled # (enabled|disabled) on ROSA this is already set up
+grafana_user: "root"
+grafana_password: "secret"
+grafana_prometheusdatasource: enabled
+
+tempo_instance: enabled
+
+postgresql_instance: disabled
+postgresql_instance_cloudnativepg: enabled
+postgresql_user: app
+postgresql_password: eVN0vgqWBt7ti8dseVe3lDySZLlD0rvt0DnOiPli4yHQOV0gi1EmoR0nIsdiUCpO
+postgresql_port: "5432"
+postgresql_database_host: usecase-2-postgres-database-rw
+postgresql_database_name: app
+postgresql_database_table: transactions
+
+fill_db: enabled
+fill_db_image: docker-quay-public.docker.devstack.vwgroup.com/modzelewski/fill-db:latest # default: image-registry.openshift-image-registry.svc:5000/<current namespace>/fill-db:latest
+
+fill_bucket: enabled
+fill_bucket_image: docker-quay-public.docker.devstack.vwgroup.com/modzelewski/fill-bucket:latest # default: image-registry.openshift-image-registry.svc:5000/<current namespace>/fill-bucket:latest
+
+ensure_bucket_exist: enabled
+ensure_bucket_exists_image: docker-quay-public.docker.devstack.vwgroup.com/modzelewski/ensure-bucket-exists:latest
+
+# image pull for cronjobs
+# <dockerconfigjson: 
+
+# fill with: oc extract secret/grafana-oauth-sa-token-h9grq --keys=token --to=- >> values.yaml
+# If no secret (after OpenShift 4.16): oc create token grafana-oauth-sa --duration=999999h >> values.yaml
+prometheusbearertoken: eyJhbGciOiJSUzI1NiIsImtpZCI6IlJxcnJ4dzBNcVZBbFZGQjFadDJ1U0l3YWxZLUsxUjA4SVdGSjl1b01CbXcifQ.eyJhdWQiOlsiaHR0cHM6Ly9rdWJlcm5ldGVzLmRlZmF1bHQuc3ZjIl0sImV4cCI6NTMyNzQ0MzQxNywiaWF0IjoxNzI3NDQ3MDE3LCJpc3MiOiJodHRwczovL2t1YmVybmV0ZXMuZGVmYXVsdC5zdmMiLCJrdWJlcm5ldGVzLmlvIjp7Im5hbWVzcGFjZSI6InBvYy1jYW1lbC1rIiwic2VydmljZWFjY291bnQiOnsibmFtZSI6ImdyYWZhbmEtb2F1dGgtc2EiLCJ1aWQiOiJjNjM1NGUwNC1lY2U5LTQ4YjUtYWU4NS05MjE1ZTdjMWI2MGIifX0sIm5iZiI6MTcyNzQ0NzAxNywic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50OnBvYy1jYW1lbC1rOmdyYWZhbmEtb2F1dGgtc2EifQ.FFRanrHNRRASOH0Wd6r6eeDjI_y5tS3k6QW8pv3Qx-_3aZVCdyyg5AgSSAIZDJXaCfNb1zSi5joU010R9B5hPNkjZ-oxnUBnB2gP7zsADJQOgXMw0Qlh8mryuPkLdjk5u3Ui2XWhjTN8BCEvpKo49_Nrcj5RQ_a-dlAyHCY0Kb5RAelHETCtcJOPwU9BqSEHKTMd1hl2UwRyMEXChzdK-C2HWya6tnJB3C-JWRUkYAlCBGN3BabaD924W0H3e2krfMK77b60fYvWejJ481NZMvHGcZMTq98U9uKLum9DBMovCXvywvblQpGbCp6doSpwcbUtA8zE6sk1BafpxcP1Ta67mcIZA_KSxs3Y559hSLZ5OwasgZfZjDFPUierAXT8enlRx_bGiww56d-Hy_B1UZB7zfTUYnXDBXH8F9yOP8tWS5fe_EqnNhUMpNfrQ3YAJHB4N9tg4kV61mn3TkxPQJuqY14_kf-TFA943i-ABjObLJKtA2IU_rctVs1bE5qHX1-dEfKqQEeT5HGzYZMRff818cgjHttltbsEGMmKxceycjuIJCd-97RLr4kU1gBnh7cx8w898caLp2Ifklh8KWgG2tbik_e6vK2d_vHfeL8rpYdLnU_to8WaYaJBi4siESC2HFlTTpuG767X_79D96TBuQQTQNFReQALxMLGlL8

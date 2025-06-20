@@ -1,0 +1,16 @@
+{{- if eq .Values.operatorinstall_postgresql "enabled" }}
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  labels:
+    operators.coreos.com/cloudnative-pg.openshift-operators: ""
+    app.kubernetes.io/part-of: camel-k-poc-infrastructure
+  name: cloudnative-pg
+  namespace: openshift-operators
+spec:
+  channel: stable-v1
+  installPlanApproval: Automatic
+  name: cloudnative-pg
+  source: certified-operators
+  sourceNamespace: openshift-marketplace
+{{- end }}

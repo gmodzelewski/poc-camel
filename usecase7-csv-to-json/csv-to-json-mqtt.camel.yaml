@@ -1,0 +1,219 @@
+- onException:
+    id: catch-all-unhandled-exceptions
+    description: catch unhandled exceptions
+    steps:
+      - to:
+          id: to-1542
+          description: Info Log-Sink
+          uri: kamelet:log-sink
+          parameters:
+            level: INFO
+            multiline: true
+            showAllProperties: true
+      - log:
+          id: log-3253
+          description: log exception
+          loggingLevel: ERROR
+          message: ">>> THIS IS INSIDE THE ON_EXCEPTION BLOCK - unhandled
+            exception:\\n${exception}}"
+    exception:
+      - java.lang.Exception
+    redeliveryPolicy:
+      logRetryAttempted: true
+      logStackTrace: true
+      maximumRedeliveries: 0
+- route:
+    id: csv-splitter
+    from:
+      id: from-4205
+      uri: minio:{{minio.bucket.usecase7:usecase7}}
+      parameters:
+        accessKey: "{{minio.access-key:minioadmin}}"
+        endpoint: "{{minio.endpoint:minio.apps.ocp4.jnyilimb.eu}}"
+        objectName: ""
+        secretKey: "{{minio.secret-key:zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG}}"
+        secure: true
+      steps:
+        - to:
+            id: to-1524
+            description: Log CSV
+            uri: log:csv
+            parameters:
+              multiline: true
+              showAll: true
+              showAllProperties: true
+              showHeaders: true
+              showProperties: true
+        - doTry:
+            id: doTry-3542
+            steps:
+              - unmarshal:
+                  id: unmarshal-csv
+                  description: CSV to List<Map>
+                  csv:
+                    delimiter: ;
+                    ignoreHeaderCase: true
+                    trim: true
+                    useMaps: true
+              - to:
+                  id: to-Exchange
+                  description: Log List<Map>
+                  uri: log:unmarshal
+                  parameters:
+                    multiline: true
+                    showAll: true
+                    showAllProperties: true
+                    showHeaders: true
+                    showProperties: true
+              - split:
+                  id: split-csv
+                  steps:
+                    - log:
+                        id: log-1488
+                        message: "${routeId} >>> Processing record [Id:
+                          ${body[Nummer]}/${body[Subnummer]},  Costcenter:
+                          ${body[Standort]}, Status: ${body[Status]}]"
+                    - choice:
+                        id: choice-2440
+                        otherwise:
+                          id: otherwise-7350
+                          steps:
+                            - to:
+                                id: to-1265
+                                description: Call csv-to-json-ko
+                                uri: direct:csvToJsonKO
+                                parameters: {}
+                            - setHeader:
+                                id: setHeader-5847
+                                description: CREJOB topic
+                                expression:
+                                  constant:
+                                    expression: IPS/IN/CREJOB/RONDO
+                                    trim: true
+                                name: CamelPahoMqtt5OverrideTopic
+                        when:
+                          - id: when-9549
+                            description: Status == OK
+                            steps:
+                              - to:
+                                  id: to-1021
+                                  description: Call csv-to-json-ok
+                                  uri: direct:csvToJsonOK
+                                  parameters: {}
+                              - setHeader:
+                                  id: setHeader-2100
+                                  description: RONDO topic
+                                  expression:
+                                    constant:
+                                      expression: IPS/IN/RONDO/DOCURL
+                                      trim: true
+                                  name: CamelPahoMqtt5OverrideTopic
+                            expression:
+                              simple:
+                                expression: ${body[Status]} == "OK"
+                    - log:
+                        id: log-3225
+                        message: ${routeId} >>> Publishing to ${header.CamelPahoMqtt5OverrideTopic} MQTT
+                          Topic
+                    - to:
+                        id: to-2503
+                        uri: paho-mqtt5:dummy
+                        parameters:
+                          brokerUrl: "{{broker.url:ssl://amq-ssl-broker-all-0-svc-rte-amq7-broker-cluster\
+                            .apps.ocp4.jnyilimb.eu:443}}"
+                          httpsHostnameVerificationEnabled: false
+                          password: "{{broker.password:P@ssw0rd}}"
+                          userName: "{{broker.user:csv-to-json-mqtt}}"
+                        pattern: InOnly
+                  expression:
+                    simple:
+                      expression: ${body}
+              
+            doCatch:
+              - id: doCatch-2589
+                steps:
+                  - log:
+                      id: log-2511
+                      description: Log Exception
+                      message: "Caught error: ${exception.message}"
+                exception:
+                  - java.lang.NullPointerException
+- route:
+    id: csv-to-json-ok
+    from:
+      id: from-csvToJsonOK
+      description: csvToJsonOK
+      uri: direct:csvToJsonOK
+      parameters: {}
+      steps:
+        - transform:
+            id: transform-3051
+            description: Generate JSON
+            expression:
+              simple:
+                expression: >-
+                  {
+                      "RETURN": "RONDO/RETURN/DOCURL/${body[Nummer]}/${body[Subnummer]}",
+                      "Nummer": "${body[Nummer]}/${body[Subnummer]}",
+                      "INVENTORY_NAME": "${body[Ident]}",
+                      "COSTCENTER": "${body[Standort]}",
+                      "Gebaeude": "${body[Gebaeude]}",
+                      "INVENTORY_NUMBER": "${body[Fabriknummer]}",
+                      "Geprueft": "${body[Geprueft]}",
+                      "Faellig": "${body[Faellig]}",
+                      "RCD-Faellig": "${body[RCD-Faellig]}",
+                      "TST-Faellig": "${body[TST-Faellig]}",
+                      "Status": "${body[Status]}",
+                      "Bewertung": "${body[Bewertung]}",
+                      "WORKGROUP": "${body[Fachgruppe]}",
+                      "Link": "${body[Link]}",
+                      "PLANT": "M",
+                      "REQUESTOR": "ROnDo"
+                  }
+                trim: true
+        - removeHeaders:
+            id: removeHeaders-3651
+            pattern: "*"
+        - log:
+            id: log-4108
+            description: Log JSON
+            message: "${routeId} >>> Generated JSON: ${body}"
+- route:
+    id: csv-to-json-ko
+    from:
+      id: from-csvToJsonKO
+      description: csvToJsonKO
+      uri: direct:csvToJsonKO
+      parameters: {}
+      steps:
+        - transform:
+            id: transform-2959
+            description: Generate JSON
+            expression:
+              simple:
+                expression: >-
+                  {
+                      "RETURN": "RONDO/RETURN/CREJOB/${body[Nummer]}/${body[Subnummer]}",
+                      "COSTCENTER": "${body[Standort]}",
+                      "REQUESTOR": "RONDO",
+                      "JOBTEXT": "Reparatur ${body[Ident]} nach fehlerhafter Pruefung am ${body[Geprueft]}",
+                      "POSTEXT": "Reparatur ${body[Ident]} nach fehlerhafter Pruefung am ${body[Geprueft]}: Status: ${body[Status]}, Bewertung: ${body[Bewertung]}, URL: ${body[Link]}",
+                      "ACCOUNT": "${body[Standort]}",
+                      "COSTTYPE": "10",
+                      "COSTCATEGORY": "02",
+                      "WORKGROUP": "${body[Fachgruppe]}",
+                      "INVENTORY_NUMBER": "${body[Fabriknummer]}",
+                      "INVENTORY_NAME": "${body[Ident]}",
+                      "JOBSTART": "",
+                      "STATUS": "EROF",
+                      "PLANT": "M",
+                      "ORDER_TYPE": "004"
+                  }
+                trim: true
+        - removeHeaders:
+            id: removeHeaders-4269
+            pattern: "*"
+        - log:
+            id: log-1685
+            description: Log JSON
+            message: "${routeId} >>> Generated JSON: ${body}"

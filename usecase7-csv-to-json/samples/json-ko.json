@@ -1,0 +1,17 @@
+{
+    "RETURN": "RONDO/RETURN/CREJOB/${body[Nummer]}/${body[Subnummer]}",
+    "COSTCENTER": "${body[Standort]}",
+    "REQUESTOR": "RONDO",
+    "JOBTEXT": "Reparatur ${body[Ident]} nach fehlerhafter Pruefung am ${body[Geprueft]}",
+    "POSTEXT": "Reparatur ${body[Ident]} nach fehlerhafter Pruefung am ${body[Geprueft]}: Status: ${body[Status]}, Bewertung: ${body[Bewertung]}, URL: ${body[Link]}",
+    "ACCOUNT": "${body[Standort]}",
+    "COSTTYPE": "10",
+    "COSTCATEGORY": "02",
+    "WORKGROUP": "${body[Fachgruppe]}",
+    "INVENTORY_NUMBER": "${body[Fabriknummer]}",
+    "INVENTORY_NAME": "${body[Ident]}",
+    "JOBSTART": "",
+    "STATUS": "EROF",
+    "PLANT": "M",
+    "ORDER_TYPE": "004"
+}

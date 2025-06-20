@@ -1,0 +1,37 @@
+{{- if and ( eq .Values.grafana_prometheusdatasource "enabled" ) ( eq .Values.after_subscription_install_run "enabled" ) }}
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: prometheus
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "3" # 1=ns 2=sub 3=instance
+spec:
+  valuesFrom:
+    - targetPath: "secureJsonData.httpHeaderValue1"
+      valueFrom:
+        secretKeyRef:
+          name: "grafana-datasource-prometheus"
+          key: "token"
+  datasource:
+    name: Prometheus
+    access: proxy
+    editable: true
+    isDefault: true
+    jsonData:
+      timeInterval: 5s
+      tlsSkipVerify: true
+      httpHeaderName1: Authorization
+    secureJsonData:
+      httpHeaderValue1: >-
+        Bearer $token
+    type: prometheus
+    url: https://thanos-querier.openshift-monitoring.svc:9091
+  instanceSelector:
+    matchLabels:
+      dashboards: camel-grafana
+  plugins:
+  - name: grafana-clock-panel
+    version: 1.3.0
+  resyncPeriod: 5m
+{{- end }}

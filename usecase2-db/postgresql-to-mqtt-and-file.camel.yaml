@@ -1,0 +1,155 @@
+# camel-k: language=yaml dependency=mvn:org.postgresql:postgresql:42.7.3
+- onException:
+    id: catch-all-unhandled-exceptions
+    description: catch unhandled exceptions
+    steps:
+      - to:
+          id: to-1542
+          description: Info Log-Sink
+          uri: kamelet:log-sink
+          parameters:
+            level: INFO
+            multiline: true
+            showAllProperties: true
+      - log:
+          id: log-3253
+          description: log exception
+          loggingLevel: ERROR
+          message: ">>> THIS IS INSIDE THE ON_EXCEPTION BLOCK - unhandled
+            exception:\\n${exception}}"
+    exception:
+      - java.lang.Exception
+    redeliveryPolicy:
+      logRetryAttempted: true
+      logStackTrace: true
+      maximumRedeliveries: 0
+- route:
+    id: sql-to-mqtt-and-file
+    from:
+      id: from-1352
+      description: Fetch transactions
+      uri: sql:SELECT * FROM transactions
+      parameters:
+        dataSource: "#PostgresqlDataSource"
+        noop: false
+        outputType: SelectList
+        repeatCount: "0"
+        useIterator: true
+      steps:
+        - to:
+            id: to-3718
+            uri: log:sql
+            parameters:
+              multiline: true
+              showAll: true
+        - setHeader:
+            id: setHeader-3753
+            description: Extract Id
+            expression:
+              simple:
+                expression: ${body[id]}
+            name: id
+        - doTry:
+            id: doTry-1602
+            steps:
+              - transform:
+                  id: transform-1804
+                  description: Generate JSON
+                  expression:
+                    simple:
+                      expression: '{ "id": ${body[id]}, "timestamp": "${body[timestamp]}",
+                        "accountnumber": "${body[accountnumber]}", "amount":
+                        ${body[amount]} }'
+                      trim: true
+              - log:
+                  id: log-1967
+                  message: Generated JSON for record [${header.id}] => ${body}
+              - multicast:
+                  id: multicast-2720
+                  steps:
+                    - to:
+                        id: to-7135
+                        description: Call write-to-file
+                        uri: direct:write-to-file
+                        parameters: {}
+                    - to:
+                        id: to-4552
+                        description: Call write-to-mqtt
+                        uri: direct:write-to-mqtt
+                        parameters: {}
+                  parallelProcessing: true
+            doCatch:
+              - id: doCatch-3854
+                steps:
+                  - log:
+                      id: log-8499
+                      description: Log Exception
+                      loggingLevel: ERROR
+                      message: "Caught error: ${exception.message}"
+                exception:
+                  - java.lang.Exception
+            doFinally:
+              id: doFinally-3854
+              steps:
+                - to:
+                    id: to-1624
+                    description: Delete record
+                    uri: sql:delete from transactions where id = :#${header.id}
+                    parameters:
+                      dataSource: "#PostgresqlDataSource"
+                - log:
+                    id: log-3610
+                    message: Record [${header.id}] has been removed from DB.
+- beans:
+    - name: PostgresqlDataSource
+      properties:
+        databaseName: "{{db.name}}"
+        password: "{{db.password}}"
+        portNumber: "{{db.port}}"
+        serverName: "{{db.host}}"
+        user: "{{db.user}}"
+      type: org.postgresql.ds.PGSimpleDataSource
+- route:
+    id: write-to-file
+    from:
+      id: from-2488
+      description: write-to-file
+      uri: direct:write-to-file
+      parameters: {}
+      steps:
+        - setHeader:
+            id: setHeader-4078
+            description: Generate filename
+            expression:
+              simple:
+                expression: ${header.id}_${date:now:yyyyMMddHHmm}.json
+                trim: true
+            name: CamelFileName
+        - log:
+            id: log-7632
+            message: Writing record [${header.id}] to ${header.CamelFileName} file
+        - to:
+            id: to-1148
+            uri: file:/tmp/db-usecase
+            parameters: {}
+- route:
+    id: publish-to-mqtt
+    from:
+      id: from-1057
+      description: write-to-mqtt
+      uri: direct:write-to-mqtt
+      parameters: {}
+      steps:
+        - log:
+            id: log-7320
+            message: Publishing record [${header.id}] to DB/JSON MQTT topic
+        - to:
+            id: to-1474
+            uri: paho-mqtt5:DB/JSON
+            parameters:
+              brokerUrl: "{{broker.url:ssl://amq-ssl-broker-all-0-svc-rte-amq7-broker-cluster\
+                .apps.ocp4.jnyilimb.eu:443}}"
+              httpsHostnameVerificationEnabled: false
+              password: "{{broker.password:P@ssw0rd}}"
+              userName: "{{broker.user:postgresql-to-mqtt-and-file}}"
+            pattern: InOnly

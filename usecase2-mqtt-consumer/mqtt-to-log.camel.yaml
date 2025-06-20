@@ -1,0 +1,116 @@
+- onException:
+    id: catch-all-unhandled-exceptions
+    description: catch unhandled exceptions
+    steps:
+      - to:
+          id: to-1542
+          description: Info Log-Sink
+          uri: kamelet:log-sink
+          parameters:
+            level: INFO
+            multiline: true
+            showAllProperties: true
+      - log:
+          id: log-3253
+          description: log exception
+          loggingLevel: ERROR
+          message: ">>> THIS IS INSIDE THE ON_EXCEPTION BLOCK - unhandled
+            exception:\\n${exception}}"
+    exception:
+      - java.lang.Exception
+    redeliveryPolicy:
+      logRetryAttempted: true
+      logStackTrace: true
+      maximumRedeliveries: 0
+- route:
+    id: mqtt-ok-route
+    from:
+      id: from-3680
+      description: IPS/IN/RONDO/DOCURL
+      uri: paho-mqtt5
+      parameters:
+        brokerUrl: "{{broker.url:ssl://amq-ssl-broker-all-0-svc-rte-amq7-broker-cluster\
+          .apps.ocp4.jnyilimb.eu:443}}"
+        clientId: mqtt-ok-route
+        httpsHostnameVerificationEnabled: false
+        password: "{{broker.password:P@ssw0rd}}"
+        topic: IPS/IN/RONDO/DOCURL
+        userName: "{{broker.user:mqtt-to-log}}"
+      steps:
+        - to:
+            id: to-3986
+            uri: kamelet:log-sink
+            parameters:
+              multiline: true
+              showAllProperties: true
+              showHeaders: true
+              showProperties: true
+- route:
+    id: mqtt-ko-route
+    from:
+      id: from-2529
+      description: IPS/IN/CREJOB/RONDO
+      uri: paho-mqtt5
+      parameters:
+        brokerUrl: "{{broker.url:ssl://amq-ssl-broker-all-0-svc-rte-amq7-broker-cluster\
+          .apps.ocp4.jnyilimb.eu:443}}"
+        clientId: mqtt-ko-route
+        httpsHostnameVerificationEnabled: false
+        password: "{{broker.password:P@ssw0rd}}"
+        topic: IPS/IN/CREJOB/RONDO
+        userName: "{{broker.user:mqtt-to-log}}"
+      steps:
+        - to:
+            id: to-3344
+            uri: kamelet:log-sink
+            parameters:
+              multiline: true
+              showAllProperties: true
+              showHeaders: true
+              showProperties: true
+- route:
+    id: mqtt-xmljson-route
+    from:
+      id: from-2568
+      description: SMRS/RETURN/CREJOB/BoostLocker
+      uri: paho-mqtt5
+      parameters:
+        brokerUrl: "{{broker.url:ssl://amq-ssl-broker-all-0-svc-rte-amq7-broker-cluster\
+          .apps.ocp4.jnyilimb.eu:443}}"
+        clientId: mqtt-xmljson-route
+        httpsHostnameVerificationEnabled: false
+        password: "{{broker.password:P@ssw0rd}}"
+        topic: SMRS/RETURN/CREJOB/BoostLocker
+        userName: "{{broker.user:mqtt-to-log}}"
+      steps:
+        - to:
+            id: to-1954
+            uri: kamelet:log-sink
+            parameters:
+              multiline: true
+              showAllProperties: true
+              showHeaders: true
+              showProperties: true
+- route:
+    id: mqtt-dbusecase-route
+    from:
+      id: from-2516
+      description: DB/JSON
+      uri: paho-mqtt5
+      parameters:
+        brokerUrl: "{{broker.url:ssl://amq-ssl-broker-all-0-svc-rte-amq7-broker-cluster\
+          .apps.ocp4.jnyilimb.eu:443}}"
+        clientId: mqtt-dbusecase-route
+        httpsHostnameVerificationEnabled: false
+        password: "{{broker.password:P@ssw0rd}}"
+        topic: DB/JSON
+        userName: "{{broker.user:mqtt-to-log}}"
+      steps:
+        - to:
+            id: to-1357
+            uri: kamelet:log-sink
+            parameters:
+              multiline: true
+              showAllProperties: true
+              showHeaders: true
+              showProperties: true

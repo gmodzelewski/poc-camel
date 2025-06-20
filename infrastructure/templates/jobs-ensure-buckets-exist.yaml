@@ -1,0 +1,25 @@
+{{- if eq .Values.ensure_bucket_exist "enabled" }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ensure-bucket-{{ .Values.minio_bucket_tempo }}-exists
+spec:
+  template:
+    spec:
+      containers:
+      - name: ensure-bucket-exist
+        image: {{ include "infrastructure.image_ensure_bucket_exists" . }}
+        env:
+        - name: MINIO_ENDPOINT
+          value: "{{ coalesce .Values.minio_endpoint "minio-api-minio.apps.ocp.ocp-gm.de" }}"
+        - name: MINIO_ACCESS_KEY
+          value: {{ .Values.minio_username }}
+        - name: MINIO_SECRET_KEY
+          value: {{ .Values.minio_password }}
+        - name: MINIO_BUCKET_NAME
+          value: {{ coalesce .Values.minio_bucket_tempo "tempo" }}
+        - name: USE_SSL
+          value: "true"
+      restartPolicy: Never
+  backoffLimit: 4
+{{- end }}

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<toolexchange>
+  <action>
+    <eventtime>2024-02-22 11:47:31.063579+01</eventtime>
+    <eventtype>1</eventtype>
+    <towerid>BOOST_Tower_1</towerid>
+    <disk>10</disk>
+    <tray>1</tray>
+    <inventory_id_defect>ID012801</inventory_id_defect>
+    <manufacturer_defect>BOSCH</manufacturer_defect>
+    <model_defect>Angle Exact ION 30-300</model_defect>
+    <product_no_defect />
+    <employee_id_defect>639354_4721</employee_id_defect>
+    <cost_center_id_defect>4721</cost_center_id_defect>
+    <cost_center_name_defect>None</cost_center_name_defect>
+    <inventory_id_replacement>ID012345</inventory_id_replacement>
+    <manufacturer_replacement>BOSCH</manufacturer_replacement>
+    <model_replacement>Angle Exact ION 30-300</model_replacement>
+    <product_no_replacement />
+    <employee_id_replacement>5006_d</employee_id_replacement>
+    <cost_center_id_replacement />
+    <cost_center_name_replacement />
+    <replacement_token>179375</replacement_token>
+    <notification_send>0</notification_send>
+    <notification_send_date />
+  </action>
+</toolexchange>

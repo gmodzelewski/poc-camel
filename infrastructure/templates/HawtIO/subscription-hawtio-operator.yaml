@@ -1,0 +1,14 @@
+{{- if eq .Values.operatorinstall_hawtio "enabled" }}
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: red-hat-hawtio-operator
+  labels:
+    app.kubernetes.io/part-of: camel-k-poc-infrastructure
+spec:
+  channel: stable-v1
+  installPlanApproval: Automatic
+  name: red-hat-hawtio-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+{{- end }}

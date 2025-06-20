@@ -1,0 +1,30 @@
+{{- if eq .Values.fill_db "enabled" }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fill-db-cronjob
+spec:
+  concurrencyPolicy: Replace
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  schedule: "* * * * *"  # Runs every minute
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: fill-db-container
+            image: {{ include "infrastructure.image_fill_db" . }}
+            env:
+            - name: DB_HOST
+              value: {{ coalesce .Values.postgresql_database_host "postgres" }}
+            - name: DB_NAME
+              value: {{ coalesce .Values.postgresql_database_name "sampledb" }}
+            - name: DB_USER
+              value: {{ coalesce .Values.postgresql_user "postgres" }}
+            - name: DB_PASSWORD
+              value: {{ coalesce .Values.postgresql_password "P@ssw0rd" }}
+            - name: DB_TABLE
+              value: {{ coalesce .Values.postgresql_database_table "transactions.public.transactions" }}
+          restartPolicy: OnFailure
+{{- end }}

@@ -1,0 +1,63 @@
+after_subscription_install_run: enabled # (enabled|disabled), skips all CRs when disabled. Set this for disabled in the first helm install. Enable after successful subscription install run. Can be ignored and just enabled when using argocd because of sync waves.
+
+# --- begin operator installs -- if any of these make problems - install them manually and disable it here.
+operatorinstall_grafana: disabled # (enabled|disabled)
+operatorinstall_tempo: disabled # (enabled|disabled)
+operatorinstall_camelk: disabled # (enabled|disabled)
+operatorinstall_hawtio: disabled # (enabled|disabled)
+operatorinstall_postgresql: disabled # (enabled|disabled)
+operatorinstall_amqbroker: disabled # (enabled|disabled) 
+operatorinstall_devspaces: disabled # (enabled|disabled) 
+#--- end ---
+
+createdevspacesinstance: disabled
+
+amqbroker_instance: enabled
+amqbroker_replicas: 1
+amqbroker_url: "tcp://broker-amq-mqtt-mqtt-0-svc"
+amqbroker_port: "1883"
+amqbroker_username: "admin"
+amqbroker_password: "admin"
+
+hawtio_instance: disabled
+
+minio_instance: enabled
+minio_image: quay.io/minio/minio:latest
+minio_replicas: 1
+minio_endpoint: minio-api-minio.apps.ocp.ocp-gm.de
+minio_username: "minioadmin"
+minio_password: "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+minio_bucket_tempo: "tempo"
+minio_bucket_usecase5: usecase5
+minio_bucket_usecase7: usecase7
+
+grafana_instance: enabled
+grafana_clustermonitoring: disabled # (enabled|disabled) on ROSA this is already set up
+grafana_user: "root"
+grafana_password: "secret"
+grafana_prometheusdatasource: enabled
+
+tempo_instance: enabled
+
+postgresql_instance: disabled
+postgresql_instance_cloudnativepg: enabled
+postgresql_user: app
+postgresql_password: humbahumbataetaerae
+postgresql_port: "5432"
+postgresql_database_host: usecase-2-postgres-database-rw
+postgresql_database_name: app
+postgresql_database_table: transactions
+
+deploy_maven_settings_to_this_namespace: gmodzelewski-devspaces
+
+fill_db: enabled
+fill_db_image: quay.io/modzelewski/fill-db:latest # default: image-registry.openshift-image-registry.svc:5000/<current namespace>/fill-db:latest
+
+fill_bucket: enabled
+fill_bucket_image: quay.io/modzelewski/fill-bucket:latest # default: image-registry.openshift-image-registry.svc:5000/<current namespace>/fill-bucket:latest
+
+ensure_bucket_exist: enabled
+ensure_bucket_exists_image: quay.io/modzelewski/ensure-bucket-exists:latest
+
+# image pull for cronjobs
+dockerconfigjson: ewogICJhdXRocyI6IHsKICAgICJxdWF5LmlvIjogewogICAgICAiYXV0aCI6ICJiVzlrZW1Wc1pYZHphMmtyWTJGdFpXeGZhMTl3YjJNNlJrOUtRVWxSUXpKUVFUWlJRazAxT1VsYU5sTlZSemxWUlRVMlZUVlNSRWRhTmxWUldWVXlRVmhGVjB4V056TTVTa05CVUZBeFNURlBWMHhJTVVJNE1BPT0iLAogICAgICAiZW1haWwiOiAiIgogICAgfQogIH0KfQ==

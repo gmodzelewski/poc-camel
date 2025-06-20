@@ -1,0 +1,112 @@
+- onException:
+    id: catch-all-unhandled-exceptions
+    description: catch unhandled exceptions
+    steps:
+      - to:
+          id: to-1542
+          description: Info Log-Sink
+          uri: kamelet:log-sink
+          parameters:
+            level: INFO
+            multiline: true
+            showAllProperties: true
+      - log:
+          id: log-3253
+          description: log exception
+          loggingLevel: ERROR
+          message: ">>> THIS IS INSIDE THE ON_EXCEPTION BLOCK - unhandled
+            exception:\\n${exception}}"
+    exception:
+      - java.lang.Exception
+    redeliveryPolicy:
+      logRetryAttempted: true
+      logStackTrace: true
+      maximumRedeliveries: 0
+- route:
+    id: xml-to-json-route
+    from:
+      id: from-4205
+      uri: minio:{{minio.bucket.usecase5:usecase5}}
+      parameters:
+        accessKey: "{{minio.access-key:minioadmin}}"
+        endpoint: "{{minio.endpoint:minio.apps.ocp4.jnyilimb.eu}}"
+        objectName: ""
+        secretKey: "{{minio.secret-key:zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG}}"
+        secure: true
+      steps:
+        - to:
+            id: to-1078
+            description: Log XML
+            uri: log:minio
+            parameters:
+              multiline: true
+              showAll: true
+              showAllProperties: true
+              showHeaders: true
+              showProperties: true
+        - setProperty:
+            id: setProperty-2413
+            description: Save XML
+            expression:
+              simple:
+                expression: ${body}
+            name: inputXml
+        - setHeader:
+            id: setHeader-4160
+            description: Save Filename
+            expression:
+              simple:
+                expression: ${header.CamelMinioObjectName}
+            name: filename
+        - doTry:
+            id: doTry-1639
+            steps:
+              - to:
+                  id: to-3356
+                  description: Generate TEXTBLOC
+                  uri: xslt:xml-to-textblock.xslt
+                  parameters: {}
+              - log:
+                  id: log-3400
+                  message: "${routeId} >>> Generated textblock: ${body}"
+              - setHeader:
+                  id: setHeader-1851
+                  description: Save TEXTBLOC
+                  expression:
+                    simple:
+                      expression: ${body}
+                  name: textblock
+              - setBody:
+                  id: setBody-4922
+                  description: Retrieve XML
+                  expression:
+                    simple:
+                      expression: ${exchangeProperty.inputXml}
+              - to:
+                  id: to-2701
+                  description: Generate JSON
+                  uri: xslt:xml-to-json.xslt
+                  parameters: {}
+              - log:
+                  id: log-2473
+                  message: "${routeId} >>> Generated JSON: ${body}. Publishing to
+                    SMRS/RETURN/CREJOB/BoostLocker MQTT Topic"
+              - to:
+                  id: to-2503
+                  uri: paho-mqtt5:SMRS/RETURN/CREJOB/BoostLocker
+                  parameters:
+                    brokerUrl: "{{broker.url:ssl://amq-ssl-broker-all-0-svc-rte-amq7-broker-cluster\
+                      .apps.ocp4.jnyilimb.eu:443}}"
+                    httpsHostnameVerificationEnabled: false
+                    password: "{{broker.password:P@ssw0rd}}"
+                    userName: "{{broker.user:xml-to-json-mqtt}}"
+                  pattern: InOnly
+            doCatch:
+              - id: doCatch-3904
+                steps:
+                  - log:
+                      id: log-1899
+                      description: Log Exception
+                      message: "Caught error: ${exception.message}"
+                exception:
+                  - java.lang.Exception

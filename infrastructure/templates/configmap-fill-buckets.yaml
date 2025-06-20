@@ -1,0 +1,23 @@
+{{- if eq .Values.fill_bucket "enabled" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "fill-bucket-{{ .Values.minio_bucket_usecase5 }}-files"
+data:
+  {{- $files := .Files }}
+  {{- range $path, $bytes := $files.Glob "files/usecase5/*" }}
+  {{ base $path }}: |
+{{ $files.Get $path | indent 4 }}
+  {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "fill-bucket-{{ .Values.minio_bucket_usecase7 }}-files"
+data:
+  {{- $files := .Files }}
+  {{- range $path, $bytes := $files.Glob "files/usecase7/*" }}
+  {{ base $path }}: |
+{{ $files.Get $path | indent 4 }}
+  {{- end }}
+{{- end }}

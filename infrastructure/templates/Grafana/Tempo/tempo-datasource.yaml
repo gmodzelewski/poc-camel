@@ -1,0 +1,22 @@
+{{- if and ( eq .Values.tempo_instance "enabled" ) ( eq .Values.after_subscription_install_run "enabled" ) }}
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  labels:
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/part-of: camel-k-poc-infrastructure
+  name: tempo
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: camel-grafana
+  datasource:
+    access: proxy
+    name: tempo
+    type: tempo
+    # url: "http://tempo-tempo-query-frontend.{{ .Release.Namespace }}.svc:3200"
+    url: "http://tempo-tempo.{{ .Release.Namespace }}.svc:3200"
+  resyncPeriod: 5m
+{{- end }}

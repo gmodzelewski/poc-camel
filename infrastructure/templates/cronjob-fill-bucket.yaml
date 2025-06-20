@@ -1,0 +1,60 @@
+{{- if eq .Values.fill_bucket "enabled" }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: "fill-buckets-cronjob"
+spec:
+  schedule: "* * * * *"  # Runs every minute
+  concurrencyPolicy: Replace
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: "fill-bucket-container-{{ .Values.minio_bucket_usecase5 }}"
+            image: {{ include "infrastructure.image_fill_bucket" . }}
+            env:
+            - name: MINIO_ENDPOINT
+              value: "{{ coalesce .Values.minio_endpoint "minio-api-minio.apps.ocp.ocp-gm.de" }}"
+            - name: MINIO_ACCESS_KEY
+              value: {{ .Values.minio_username }}
+            - name: MINIO_SECRET_KEY
+              value: {{ .Values.minio_password }}
+            - name: MINIO_BUCKET_NAME
+              value: {{ coalesce .Values.minio_bucket_usecase5 "usecase5" }}
+            - name: SOURCE_DIRECTORY
+              value: "/tmp/localfiles"
+            - name: USE_SSL
+              value: "true"
+            volumeMounts:
+              - name: "config-volume-{{ .Values.minio_bucket_usecase5 }}"
+                mountPath: /tmp/localfiles
+          - name: "fill-bucket-container-{{ .Values.minio_bucket_usecase7 }}"
+            image: {{ include "infrastructure.image_fill_bucket" . }}
+            env:
+            - name: MINIO_ENDPOINT
+              value: "{{ coalesce .Values.minio_endpoint "minio-api-minio.apps.ocp.ocp-gm.de" }}"
+            - name: MINIO_ACCESS_KEY
+              value: {{ .Values.minio_username }}
+            - name: MINIO_SECRET_KEY
+              value: {{ .Values.minio_password }}
+            - name: MINIO_BUCKET_NAME
+              value: {{ coalesce .Values.minio_bucket_usecase7 "usecase7" }}
+            - name: SOURCE_DIRECTORY
+              value: "/tmp/localfiles"
+            - name: USE_SSL
+              value: "true"
+            volumeMounts:
+              - name: "config-volume-{{ .Values.minio_bucket_usecase7 }}"
+                mountPath: /tmp/localfiles
+          volumes:
+          - name: "config-volume-{{ .Values.minio_bucket_usecase5 }}"
+            configMap:
+              name: fill-bucket-{{ .Values.minio_bucket_usecase5 }}-files 
+          - name: "config-volume-{{ .Values.minio_bucket_usecase7 }}"
+            configMap:
+              name: fill-bucket-{{ .Values.minio_bucket_usecase7 }}-files 
+          restartPolicy: OnFailure
+{{- end }}

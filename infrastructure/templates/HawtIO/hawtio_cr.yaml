@@ -1,0 +1,27 @@
+{{- if and ( eq .Values.hawtio_instance "enabled" ) ( eq .Values.after_subscription_install_run "enabled" ) }}
+apiVersion: hawt.io/v1
+kind: Hawtio
+metadata:
+  name: hawtio-online
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "3" # 1=ns 2=sub 3=instance
+  labels:
+    app.kubernetes.io/part-of: camel-k-poc-infrastructure
+spec:
+  auth:
+    clientCertCheckSchedule: '* */12 * * *'
+    clientCertExpirationPeriod: 24
+  replicas: 1
+  resources:
+    limits:
+      cpu: "1"
+      memory: 200Mi
+    requests:
+      cpu: 200m
+      memory: 32Mi
+  # The deployment type. Defaults to Cluster.
+  # Cluster: Hawtio is capable of discovering and managing applications across all namespaces the authenticated user has access to. 
+  # Namespace: Hawtio is capable of discovering and managing applications within the deployment namespace.
+  type: Cluster
+{{- end }}

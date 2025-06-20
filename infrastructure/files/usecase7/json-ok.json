@@ -1,0 +1,18 @@
+{
+    "RETURN": "RONDO/RETURN/DOCURL/${body[Nummer]}/${body[Subnummer]}",
+    "Nummer": "${body[Nummer]}/${body[Subnummer]}",
+    "INVENTORY_NAME": "${body[Ident]}",
+    "COSTCENTER": "${body[Standort]}",
+    "Gebaeude": "${body[Gebaeude]}",
+    "INVENTORY_NUMBER": "${body[Fabriknummer]}",
+    "Geprueft": "${body[Geprueft]}",
+    "Faellig": "${body[Faellig]}",
+    "RCD-Faellig": "${body[RCD-Faellig]}",
+    "TST-Faellig": "${body[TST-Faellig]}",
+    "Status": "${body[Status]}",
+    "Bewertung": "${body[Bewertung]}",
+    "WORKGROUP": "${body[Fachgruppe]}",
+    "Link": "${body[Link]}",
+    "PLANT": "M",
+    "REQUESTOR": "ROnDo"
+}

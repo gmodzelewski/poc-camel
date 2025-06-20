@@ -1,0 +1,11 @@
+# needed for local operator install, currently used by hawtio only
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  annotations:
+    olm.providedAPIs: Hawtio.v1.hawt.io,Hawtio.v1alpha1.hawt.io
+  name: {{ .Release.Namespace }}
+spec:
+  targetNamespaces:
+  - {{ .Release.Namespace }}
+  upgradeStrategy: Default

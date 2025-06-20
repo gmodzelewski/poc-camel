@@ -1,0 +1,12 @@
+Boost.Locker Aktion <eventtype>
+* Locker-ID          : <first part of the file name up to the _ character>
+* Kostenstelle       : <cost_center_id_defect>, if empty then <cost_center_id_replacement>
+* Hersteller (Defekt): <manufacturer_defect>
+* Hersteller (Neu)   : <manufacturer_replacement>
+* Modell (Defekt)    : <model_defect>
+* Modell (Neu)       : <model_replacement>
+* Inventarnr.(Defekt): <inventory_id_defect>
+* Inventarnr.(Neu)   : <inventory_id_replacement>
+* Ausweis/Karte      : <employee_id_defect>
+* Zeitpunkt Bewegung : <eventtime>
+* Replacement-Token  : <replacement_token>

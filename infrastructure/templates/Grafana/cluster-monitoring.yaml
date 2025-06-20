@@ -1,0 +1,129 @@
+{{- if eq .Values.grafana_clustermonitoring "enabled" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+data:
+  config.yaml: |
+    enableUserWorkload: true
+    alertmanagerMain:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 200m
+          memory: 500Mi
+    prometheus:
+      retention: 24h
+      retentionSize: 10GB
+    prometheusK8s:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 3Gi
+        requests:
+          cpu: 200m
+          memory: 500Mi
+      volumeClaimTemplate:
+        spec:
+          volumeMode: Filesystem
+          resources:
+            requests:
+              storage: 40Gi
+    prometheusOperator:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 200m
+          memory: 500Mi
+    metricsServer:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 50Mi
+        limits:
+          cpu: 50m
+          memory: 500Mi
+    kubeStateMetrics:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 200m
+          memory: 500Mi
+    telemeterClient:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 200m
+          memory: 500Mi
+    openshiftStateMetrics:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 200m
+          memory: 500Mi
+    thanosQuerier:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 200m
+          memory: 500Mi
+    nodeExporter:
+      resources:
+        limits:
+          cpu: 50m
+          memory: 150Mi
+        requests:
+          cpu: 20m
+          memory: 50Mi
+    monitoringPlugin:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 200m
+          memory: 500Mi
+    prometheusOperatorAdmissionWebhook:
+      resources:
+        limits:
+          cpu: 50m
+          memory: 100Mi
+        requests:
+          cpu: 20m
+          memory: 50Mi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-workload-monitoring-config
+  namespace: openshift-user-workload-monitoring
+data:
+  config.yaml: |
+    prometheus: 
+      retention: 24h
+      retentionSize: 10GB
+      resources:
+        requests:
+          cpu: 200m 
+          memory: 2Gi 
+    thanosRuler:
+      retention: 10d
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: 10Gi
+{{- end }}

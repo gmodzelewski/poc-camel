@@ -1,0 +1,14 @@
+{
+    "RETURN": "SMRS/RETURN/CREJOB/BoostLocker",
+    "COSTCENTER": "<cost_center_id_defect>, if empty then <cost_center_id_replacement>",
+    "REQUESTOR": "Boost.<first part of the XML file name up to the _ character>",
+    "JOBTEXT": "$TEXTBLOCK",
+    "POSTEXT": "$TEXTBLOCK",
+    "ACCOUNT": "<cost_center_id_defect>, if empty then <cost_center_id_replacement>",
+    "COSTTYPE": null,
+    "COSTCATEGORY": null,
+    "WORKGROUP": "IH4-SR-5-M",
+    "INVENTORY_NUMBER": "<inventory_id_defect>, if empty then <inventory_id_replacement>",
+    "JOBSTART": null,
+    "STATUS": "EROF"
+}

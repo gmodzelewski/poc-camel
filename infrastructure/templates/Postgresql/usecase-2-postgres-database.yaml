@@ -1,0 +1,33 @@
+{{- if and ( eq .Values.postgresql_instance_cloudnativepg "enabled" ) ( eq .Values.after_subscription_install_run "enabled" ) }}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: usecase-2-postgres-database
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "3" # 1=ns 2=sub 3=instance
+  labels:
+    app.kubernetes.io/part-of: camel-k-poc-infrastructure
+spec:
+  instances: 3
+  logLevel: info
+  primaryUpdateStrategy: unsupervised
+  storage:
+    size: 1Gi
+  walStorage:
+    size: 1Gi
+  imageName: ghcr.io/cloudnative-pg/postgresql:16.3
+  # # TODO: fix this... authentification not working or the database does not exist
+  bootstrap:
+    initdb:
+      secret: 
+        name: "cloudnativepg-{{ coalesce .Values.postgresql_database_host "postgres" }}-secret"
+      database: {{coalesce .Values.postgresql_database_name "transactions" }}
+      owner: {{ coalesce .Values.postgresql_user "postgres" }}
+      encoding: UTF8
+      localeCType: C
+      localeCollate: C
+{{- end }}
+
+# psql -h usecase-2-postgres-database-rw -p 5432 -U app app
+# psql 

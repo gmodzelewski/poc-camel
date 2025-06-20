@@ -1,0 +1,11 @@
+{{ if eq .Values.after_subscription_install_run "enabled" }}
+apiVersion: camel.apache.org/v1
+kind: IntegrationPlatform
+metadata:
+  labels:
+    app: camel-k
+    app.kubernetes.io/part-of: camel-k-poc-infrastructure
+  name: camel-k
+spec:
+  profile: OpenShift
+{{- end }}
